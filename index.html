@@ -797,17 +797,32 @@ function showDetail(id) {
     <div style="font-size:11px;color:var(--gray);font-family:var(--font-mono);margin-bottom:1rem;">${formatDate(w.date)}</div>
     ${body}
     ${w.notes?`<div style="font-size:13px;color:var(--gray);font-family:var(--font-mono);margin-top:12px;padding:10px;background:var(--off);border-radius:8px;font-style:italic;">"${w.notes}"</div>`:''}
+    ${isMe&&!isCardio?`<button class="btn btn-primary btn-full" style="margin-top:1.5rem;" onclick="loadToEdit('${w.id}');closeModal()">REPETIR SESIÓN</button>`:''}
     <button class="btn btn-full" style="margin-top:1.5rem;" onclick="closeModal()">CERRAR</button>
   `;
   document.getElementById('detail-modal').classList.add('open');
 }
 
-function closeModal(event) {
+function loadToEdit(id) {
+  const w=workouts.find(x=>String(x.id)===String(id));
+  if (!w) return;
+  selectedCat=w.category||w.name;
+  showTab('registro');
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===selectedCat));
+  document.getElementById('fuerza-form').style.display='block';
+  document.getElementById('cardio-form').style.display='none';
+  document.getElementById('workout-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('workout-notes').value='';
+  document.getElementById('exercises-container').innerHTML='';
+  exerciseCount=0;
+  (w.exercises||[]).forEach(e=>addExercise(e));
+}
+  
+  function closeModal(event) {
   if (!event||event.target===document.getElementById('detail-modal'))
     document.getElementById('detail-modal').classList.remove('open');
 }
 
-// ---- PROGRESO ----
 function renderProgress() {
   const mine=workouts.filter(w=>w.user_id===currentUser.id);
   const fuerzaW=mine.filter(w=>w.category!=='Cardio'&&w.name!=='Cardio');
